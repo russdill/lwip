@@ -2211,6 +2211,13 @@
 #endif
 
 /**
+ * SOCKS_DEBUG: Enable debugging in socks*.c.
+ */
+#ifndef SOCKS_DEBUG
+#define SOCKS_DEBUG                     LWIP_DBG_OFF
+#endif
+
+/**
  * ICMP_DEBUG: Enable debugging in icmp.c.
  */
 #ifndef ICMP_DEBUG
