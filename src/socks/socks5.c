@@ -66,7 +66,7 @@ socks5_response(struct socks_data *sdata, int code, int die)
 	}
 	bufferevent_write(bev, &port, 2);
 	if (die)
-		socks_flush_response(sdata);
+		socks_flush_socks(sdata);
 }
 
 void

@@ -49,7 +49,7 @@ socks4_response(struct socks_data *sdata, int code, int die)
 	bufferevent_write(bev, &hdr, sizeof(hdr));
 
 	if (die)
-		socks_flush_response(sdata);
+		socks_flush_socks(sdata);
 }
 
 void

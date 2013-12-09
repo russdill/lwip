@@ -16,7 +16,7 @@ struct socks_data {
 };
 
 void socks_free(struct socks_data *data);
-void socks_flush_response(struct socks_data *data);
+void socks_flush_socks(struct socks_data *data);
 int socks_tcp_connect(struct socks_data *data);
 int socks_tcp_bind(struct socks_data *data);
 void socks_error(struct bufferevent *bev, short events, void *ctx);
