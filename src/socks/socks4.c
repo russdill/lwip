@@ -31,7 +31,7 @@ struct socks4_data {
 static void
 socks4_response(struct socks_data *sdata, int code, int die)
 {
-	struct socks4_hdr hdr = {.version = 5, .cmd = code};
+	struct socks4_hdr hdr = {.version = 0, .cmd = code};
 	struct bufferevent *bev = sdata->bev;
 	struct socks4_data *data = container_of(sdata, struct socks4_data, socks);
 
