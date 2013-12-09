@@ -7,8 +7,9 @@
 
 #include "socks.h"
 
-#define SOCKS4_CMD_CONNECT     1
-#define SOCKS4_CMD_BIND        2
+#define SOCKS4_CMD_CONNECT	1
+#define SOCKS4_CMD_BIND		2
+#define SOCKS4_CMD_RESOLVE	240
 
 #define SOCKS4_RESP_GRANT       90
 #define SOCKS4_RESP_REJECT      91
@@ -45,7 +46,11 @@ socks4_response(struct socks_data *sdata, int code, int die)
 			hdr.port = htons(sdata->pcb->local_port);
 			hdr.addr = sdata->pcb->local_ip.addr;
 		}
+	} else {
+		hdr.port = 0;
+		hdr.addr = sdata->ipaddr.addr;
 	}
+
 	bufferevent_write(bev, &hdr, sizeof(hdr));
 
 	if (die)
@@ -67,7 +72,10 @@ socks4_connect(struct socks_data *sdata)
 	struct socks4_data *data = container_of(sdata, struct socks4_data, socks);
 
 	LWIP_DEBUGF(SOCKS_DEBUG, ("%s\n", __func__));
-	if (data->cmd == SOCKS4_CMD_CONNECT) {
+	if (data->cmd == SOCKS4_CMD_RESOLVE) {
+		socks4_response(sdata, SOCKS4_RESP_GRANT, 1);
+
+	} else if (data->cmd == SOCKS4_CMD_CONNECT) {
 		err_t ret;
 		ret = socks_tcp_connect(sdata);
 		if (ret < 0) {
@@ -168,7 +176,8 @@ socks4_read_hdr(struct bufferevent *bev, void *ctx)
 
 	LWIP_DEBUGF(SOCKS_DEBUG, ("%s: cmd %d\n", __func__, hdr.cmd));
 
-	if (hdr.cmd != SOCKS4_CMD_CONNECT && hdr.cmd != SOCKS4_CMD_BIND) {
+	if (hdr.cmd != SOCKS4_CMD_CONNECT && hdr.cmd != SOCKS4_CMD_BIND &&
+	    !(hdr.cmd == SOCKS4_CMD_RESOLVE && !hdr.port)) {
 		socks4_response(sdata, SOCKS4_RESP_REJECT, 1);
 		return;
 	}
