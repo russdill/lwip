@@ -145,6 +145,7 @@ socks_readable(struct bufferevent *bev, void *ctx)
 		LWIP_DEBUGF(SOCKS_DEBUG, ("%s: ERR_MEM\n", __func__));
 		bufferevent_disable(bev, EV_READ);
 	} else if (ret < 0)
+		LWIP_DEBUGF(SOCKS_DEBUG, ("%s: tcp_write err\n", __func__));
 		socks_flush_socks(data);
 	else {
 		LWIP_DEBUGF(SOCKS_DEBUG, ("%s: Draining %d bytes from socks read\n", __func__, avail));
@@ -177,8 +178,10 @@ socks_tcp_connected(void *ctx, struct tcp_pcb *pcb, err_t err)
 	struct socks_data *data = ctx;
 
 	if (!pcb || err < 0 || !data || !data->bev) {
-		if (data)
+		if (data) {
+			LWIP_DEBUGF(SOCKS_DEBUG, ("%s: err\n", __func__));
 			socks_flush_socks(data);
+		}
 		return err;
 	}
 
