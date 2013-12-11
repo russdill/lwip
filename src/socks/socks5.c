@@ -70,9 +70,8 @@ socks5_response(struct socks_data *sdata, int code, int die)
 }
 
 void
-socks5_connected(struct bufferevent *bev, void *ctx)
+socks5_connected(struct socks_data *sdata)
 {
-	struct socks_data *sdata = ctx;
 	struct socks5_data *data = container_of(sdata, struct socks5_data, socks);
 	data->connected = 1;
 	socks5_response(sdata, SOCKS5_RESP_GRANTED, 0);

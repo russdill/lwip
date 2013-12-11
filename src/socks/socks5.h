@@ -3,7 +3,7 @@
 
 struct bufferevent;
 
-void socks5_connected(struct bufferevent *bev, void *ctx);
+void socks5_connected(struct socks_data *sdata);
 void socks5_start(struct bufferevent *bev);
 
 #endif

@@ -4,7 +4,7 @@
 struct bufferevent;
 
 void socks4_start(struct bufferevent *bev);
-void socks4_connected(struct bufferevent *bev, void *ctx);
+void socks4_connected(struct socks_data *sdata);
 
 
 #endif

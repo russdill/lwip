@@ -191,9 +191,9 @@ socks_tcp_connected(void *ctx, struct tcp_pcb *pcb, err_t err)
 	}
 
 	if (data->version == 4)
-		socks4_connected(data->bev, data);
+		socks4_connected(data);
 	else
-		socks5_connected(data->bev, data);
+		socks5_connected(data);
 
 	bufferevent_setwatermark(data->bev, EV_READ, 1, 2048);
 	bufferevent_setwatermark(data->bev, EV_WRITE, 4096, 16384);
