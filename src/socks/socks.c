@@ -190,6 +190,8 @@ socks_tcp_connected(void *ctx, struct tcp_pcb *pcb, err_t err)
 		data->pcb = pcb;
 	}
 
+	data->connected = 1;
+
 	if (data->version == 4)
 		socks4_connected(data);
 	else

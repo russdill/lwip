@@ -42,7 +42,6 @@ struct socks5_data {
 	u_char nfqdn;
 	char fqdn[256];
 	u_char cmd;
-	int connected;
 };
 
 static void
@@ -56,7 +55,7 @@ socks5_response(struct socks_data *sdata, int code, int die)
         LWIP_DEBUGF(SOCKS_DEBUG, ("%s: code %d, die %d\n", __func__, code, die));
 	bufferevent_write(bev, &req, sizeof(req));
 	if (sdata->pcb) {
-		if (data->connected && data->cmd == SOCKS5_CMD_BIND) {
+		if (sdata->connected && data->cmd == SOCKS5_CMD_BIND) {
 			bufferevent_write(bev, &sdata->pcb->remote_ip.addr, 4);
 			port = htons(sdata->pcb->remote_port);
 		} else {

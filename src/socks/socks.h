@@ -9,6 +9,7 @@ struct event_base;
 
 struct socks_data {
 	struct bufferevent *bev;
+	int connected;
 	u_char version;
 	ip_addr_t ipaddr;
 	u_int16_t port;

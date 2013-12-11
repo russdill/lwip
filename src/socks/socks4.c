@@ -26,7 +26,6 @@ struct socks4_data {
 	u_char pos;
 	char fqdn[256];
 	u_char cmd;
-	int connected;
 };
 
 static void
@@ -39,7 +38,7 @@ socks4_response(struct socks_data *sdata, int code, int die)
 	LWIP_DEBUGF(SOCKS_DEBUG, ("%s: %d%s\n", __func__, code,
 							die ? " die" : ""));
 	if (!die) {
-		if (data->connected && data->cmd == SOCKS4_CMD_BIND) {
+		if (sdata->connected && data->cmd == SOCKS4_CMD_BIND) {
 			hdr.port = htons(sdata->pcb->remote_port);
 			hdr.addr = sdata->pcb->remote_ip.addr;
 		} else {
