@@ -144,10 +144,10 @@ socks_readable(struct bufferevent *bev, void *ctx)
 	if (ret == ERR_MEM) {
 		LWIP_DEBUGF(SOCKS_DEBUG, ("%s: ERR_MEM\n", __func__));
 		bufferevent_disable(bev, EV_READ);
-	} else if (ret < 0)
+	} else if (ret < 0) {
 		LWIP_DEBUGF(SOCKS_DEBUG, ("%s: tcp_write err\n", __func__));
 		socks_flush_socks(data);
-	else {
+	} else {
 		LWIP_DEBUGF(SOCKS_DEBUG, ("%s: Draining %d bytes from socks read\n", __func__, avail));
 		evbuffer_drain(buf, avail);
 		if (wait_for_more)
