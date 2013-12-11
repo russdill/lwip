@@ -72,6 +72,10 @@ socks_tcp_err(void *ctx, err_t err)
 	data->pcb = NULL;
 
 	if (!data->connected) {
+		if (data->version == 4)
+			socks4_connected(data);
+		else
+			socks5_connected(data);
 	} else
 		socks_flush_socks(data);
 }

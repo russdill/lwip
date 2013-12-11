@@ -59,9 +59,10 @@ socks4_response(struct socks_data *sdata, int code, int die)
 void
 socks4_connected(struct socks_data *sdata)
 {
-	struct socks4_data *data = container_of(sdata, struct socks4_data, socks);
-	data->connected = 1;
-	socks4_response(sdata, SOCKS4_RESP_GRANT, 0);
+	if (sdata->connected)
+		socks4_response(sdata, SOCKS4_RESP_GRANT, 0);
+	else
+		socks4_response(sdata, SOCKS4_RESP_REJECT, 1);
 }
 
 static void

@@ -71,9 +71,10 @@ socks5_response(struct socks_data *sdata, int code, int die)
 void
 socks5_connected(struct socks_data *sdata)
 {
-	struct socks5_data *data = container_of(sdata, struct socks5_data, socks);
-	data->connected = 1;
-	socks5_response(sdata, SOCKS5_RESP_GRANTED, 0);
+	if (sdata->connected)
+		socks5_response(sdata, SOCKS5_RESP_GRANTED, 0);
+	else
+		socks5_response(sdata, SOCKS5_RESP_HOST_UNREACH, 1);
 }
 
 static void
