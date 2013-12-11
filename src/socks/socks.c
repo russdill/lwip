@@ -33,7 +33,7 @@ socks_flush_tcp(struct socks_data *data)
 		bufferevent_free(data->bev);
 		data->bev = NULL;
 	}
-	if (tcp_sndbuf(data->pcb) == TCP_SND_BUF)
+	if (!data->pcb || tcp_sndbuf(data->pcb) == TCP_SND_BUF)
 		socks_free(data);
 }
 
@@ -162,7 +162,7 @@ socks_tcp_sent(void *ctx, struct tcp_pcb *pcb, u16_t len)
 
 	LWIP_DEBUGF(SOCKS_DEBUG, ("%s: Stack has sent %d bytes\n", __func__, len));
 	if (!data || !data->bev) {
-		if (tcp_sndbuf(data->pcb) == TCP_SND_BUF)
+		if (!data->pcb || tcp_sndbuf(data->pcb) == TCP_SND_BUF)
 			socks_free(data);
 	} else if (len != 0) {
 		bufferevent_enable(data->bev, EV_READ);
