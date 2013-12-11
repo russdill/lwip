@@ -64,7 +64,15 @@ socks_tcp_err(void *ctx, err_t err)
 {
 	struct socks_data *data = ctx;
 	LWIP_DEBUGF(SOCKS_DEBUG, ("%s\n", __func__));
-	if (data)
+	if (!data)
+		return;
+
+	/* lwIP will free the pcb */
+	tcp_arg(data->pcb, NULL);
+	data->pcb = NULL;
+
+	if (!data->connected) {
+	} else
 		socks_flush_socks(data);
 }
 
