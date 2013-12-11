@@ -48,15 +48,24 @@ socks_flush_socks_fin(struct bufferevent *bev, void *ctx)
 void
 socks_flush_socks(struct socks_data *data)
 {
+	struct evbuffer *buf;
+
+	LWIP_DEBUGF(SOCKS_DEBUG, ("%s\n", __func__));
 	if (data->pcb) {
 		tcp_arg(data->pcb, NULL);
 		if (tcp_close(data->pcb) < 0)
 			tcp_abort(data->pcb);
 		data->pcb = NULL;
 	}
-	bufferevent_disable(data->bev, EV_READ);
-	bufferevent_setwatermark(data->bev, EV_WRITE, 0, 16384);
-	bufferevent_setcb(data->bev, NULL, socks_flush_socks_fin, socks_error, data);
+
+	buf = bufferevent_get_output(data->bev);
+	if (evbuffer_get_length(buf)) {
+		bufferevent_disable(data->bev, EV_READ);
+		bufferevent_setwatermark(data->bev, EV_WRITE, 0, 16384);
+		bufferevent_setcb(data->bev, NULL, socks_flush_socks_fin,
+					socks_error, data);
+	} else
+		socks_flush_socks_fin(data->bev, data);
 }
 
 static void
