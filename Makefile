@@ -18,6 +18,7 @@ src/core/stats.c \
 src/core/libevent.c \
 src/core/dns.c \
 src/core/udp.c \
+src/core/raw.c \
 src/core/sys.c \
 src/core/tcp.c \
 src/core/tcp_in.c \

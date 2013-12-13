@@ -50,7 +50,7 @@
 
 #define LWIP_ARP			0
 #define LWIP_ICMP			0
-#define LWIP_RAW			0
+#define LWIP_RAW			1
 #define LWIP_DNS			1
 #define DNS_TABLE_SIZE			255
 #define DNS_MAX_SERVERS			8
