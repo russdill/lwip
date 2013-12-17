@@ -279,7 +279,9 @@ socks_tcp_bind(struct socks_data *data)
 void
 socks_error(struct bufferevent *bev, short events, void *ctx)
 {
-	if (events & (BEV_EVENT_ERROR | BEV_EVENT_EOF))
+	if (!ctx)
+		bufferevent_free(bev);
+	else
 		socks_flush_tcp(ctx);
 }
 
