@@ -312,12 +312,10 @@ socks_accept(struct evconnlistener *evl, evutil_socket_t new_fd,
 {
 	struct event_base *base = evconnlistener_get_base(evl);
 	struct bufferevent *bev;
-	struct timeval timeout = {5, 0};
 
 	LWIP_DEBUGF(SOCKS_DEBUG, ("%s: Accepting socks connection\n", __func__));
 
 	bev = bufferevent_socket_new(base, new_fd, BEV_OPT_CLOSE_ON_FREE);
-	bufferevent_set_timeouts(bev, &timeout, NULL);
 	bufferevent_setcb(bev, socks_version, NULL, socks_error, NULL);
 	bufferevent_setwatermark(bev, EV_READ, 1, 2048);
 	bufferevent_enable(bev, EV_READ|EV_WRITE);
