@@ -85,8 +85,10 @@ socks_tcp_err(void *ctx, err_t err)
 			socks4_connected(data);
 		else
 			socks5_connected(data);
-	} else
+	} else if (data->bev)
 		socks_flush_socks(data);
+	else
+		socks_free(data);
 }
 
 static void
