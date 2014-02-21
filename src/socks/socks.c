@@ -111,8 +111,12 @@ socks_tcp_recv(void *ctx, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 
 	if (err < 0 || !p || !data || !data->bev) {
 		LWIP_DEBUGF(SOCKS_DEBUG, ("%s: ERR_ABRT, (%s)\n", __func__, tcp_debug_state_str(pcb->state)));
-		if (data)
-			socks_flush_socks(data);
+		if (data) {
+			if (data->bev)
+				socks_flush_socks(data);
+			else
+				socks_free(data);
+		}
 		return ERR_ABRT;
 	}
 
@@ -203,7 +207,10 @@ socks_tcp_connected(void *ctx, struct tcp_pcb *pcb, err_t err)
 	if (!pcb || err < 0 || !data || !data->bev) {
 		if (data) {
 			LWIP_DEBUGF(SOCKS_DEBUG, ("%s: err\n", __func__));
-			socks_flush_socks(data);
+			if (data->bev)
+				socks_flush_socks(data);
+			else
+				socks_free(data);
 		}
 		return err;
 	}
