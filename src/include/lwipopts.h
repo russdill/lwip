@@ -60,6 +60,8 @@
 #define TCP_SND_QUEUELEN                8192
 #define TCP_SND_BUF                     (16 * TCP_MSS)
 
+#define SO_REUSE			1
+
 #define NO_SYS                          1
 #define LWIP_NETCONN                    0
 #define LWIP_SOCKET                     0

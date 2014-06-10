@@ -216,8 +216,16 @@ socks_tcp_connected(void *ctx, struct tcp_pcb *pcb, err_t err)
 	}
 
 	if (pcb != data->pcb) {
-		tcp_close(data->pcb);
+		tcp_arg(data->pcb, NULL);
+		if (tcp_close(data->pcb) < 0)
+			tcp_abort(data->pcb);
 		data->pcb = pcb;
+		tcp_arg(data->pcb, data);
+		tcp_err(data->pcb, socks_tcp_err);
+		tcp_recv(data->pcb, socks_tcp_recv);
+		tcp_sent(data->pcb, socks_tcp_sent);
+		data->pcb->flags |= TF_NODELAY;
+		ip_set_option(data->pcb, SOF_REUSEADDR);
 	}
 
 	data->connected = 1;
@@ -274,6 +282,7 @@ socks_tcp_bind(struct socks_data *data)
 	tcp_recv(data->pcb, socks_tcp_recv);
 	tcp_sent(data->pcb, socks_tcp_sent);
 	data->pcb->flags |= TF_NODELAY;
+	ip_set_option(data->pcb, SOF_REUSEADDR);
 
 	ret = tcp_bind(data->pcb, IP_ADDR_ANY, data->port);
 	if (ret < 0)
