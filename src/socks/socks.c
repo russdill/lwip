@@ -266,12 +266,21 @@ socks_tcp_connect(struct socks_data *data)
 							socks_tcp_connected);
 }
 
+static void
+socks_kill(struct bufferevent *bev, void *ctx)
+{
+	socks_free(ctx);
+}
+
 int
 socks_tcp_bind(struct socks_data *data)
 {
+	struct tcp_pcb *pcb;
 	err_t ret;
 
-	bufferevent_disable(data->bev, EV_READ);
+	/* If the user sends any input data at this point, it is an error */
+	bufferevent_setcb(data->bev, socks_kill, NULL, socks_error, data);
+	bufferevent_enable(data->bev, EV_READ);
 
 	data->pcb = tcp_new();
 	if (!data->pcb)
@@ -288,7 +297,10 @@ socks_tcp_bind(struct socks_data *data)
 	if (ret < 0)
 		return ret;
 
-	data->pcb = tcp_listen(data->pcb);
+	pcb = tcp_listen(data->pcb);
+	if (!pcb)
+		return -1;
+	data->pcb = pcb;
 	tcp_accept(data->pcb, socks_tcp_connected);
 
 	return 0;
