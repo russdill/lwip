@@ -68,6 +68,8 @@
 
 #define LWIP_NETIF_LINK_CALLBACK	1
 
+#define SOCKS_SEARCH_SIZE		6
+
 //#define LWIP_DEBUG			1
 //#define NETIF_DEBUG			LWIP_DBG_ON
 //#define SOCKS_DEBUG			LWIP_DBG_ON

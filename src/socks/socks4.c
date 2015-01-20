@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <lwip/tcp.h>
-#include <lwip/dns.h>
 #include <event2/event.h>
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
@@ -24,7 +23,6 @@ struct socks4_hdr {
 struct socks4_data {
 	struct socks_data socks;
 	u_char pos;
-	char fqdn[256];
 	u_char cmd;
 };
 
@@ -90,17 +88,16 @@ socks4_connect(struct socks_data *sdata)
 	}
 }
 
-static void
-socks4_found_host(const char *name, ip_addr_t *ipaddr, void *ctx)
+void
+socks4_found_host(struct socks_data *sdata)
 {
-	struct socks_data *sdata = ctx;
+	socks4_connect(sdata);
+}
 
-	if (!ipaddr || !ipaddr->addr)
-		socks4_response(sdata, SOCKS4_RESP_REJECT, 1);
-	else {
-		sdata->ipaddr.addr = ipaddr->addr;
-		socks4_connect(sdata);
-	}
+void
+socks4_host_failed(struct socks_data *sdata)
+{
+	socks4_response(sdata, SOCKS4_RESP_REJECT, 1);
 }
 
 static void
@@ -110,11 +107,10 @@ socks4_read_fqdn(struct bufferevent *bev, void *ctx)
 	struct socks4_data *data = container_of(sdata, struct socks4_data, socks);
 
 	while (evbuffer_get_length(bufferevent_get_input(bev))) {
-		bufferevent_read(bev, data->fqdn + data->pos, 1);
-		if (!data->fqdn[data->pos]) {
+		bufferevent_read(bev, sdata->fqdn + data->pos, 1);
+		if (!sdata->fqdn[data->pos]) {
 			int ret;
-			ret = dns_gethostbyname(data->fqdn, &sdata->ipaddr,
-							socks4_found_host, ctx);
+			ret = socks_lookup_host(sdata);
 			bufferevent_disable(bev, EV_READ);
 			if (ret == 0)
 				socks4_connect(sdata);

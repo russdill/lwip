@@ -40,7 +40,6 @@ struct socks5_data {
 	u_char nauth;
 	u_char atyp;
 	u_char nfqdn;
-	char fqdn[256];
 	u_char cmd;
 };
 
@@ -127,21 +126,19 @@ socks5_read_ipv4(struct bufferevent *bev, void *ctx)
 	socks5_read_port(bev, ctx);
 }
 
-static void
-socks5_found_host(const char *name, ip_addr_t *ipaddr, void *ctx)
+void
+socks5_found_host(struct socks_data *sdata)
 {
-	struct socks_data *sdata = ctx;
 	struct bufferevent *bev = sdata->bev;
 
-	if (!ipaddr || !ipaddr->addr) {
-		socks5_response(sdata, SOCKS5_RESP_FAILURE, 1);
-		return;
-	}
-
-        LWIP_DEBUGF(SOCKS_DEBUG, ("%s\n", __func__));
-	sdata->ipaddr.addr = ipaddr->addr;
 	bufferevent_enable(bev, EV_READ);
-	socks5_read_port(bev, ctx);
+	socks5_read_port(bev, sdata);
+}
+
+void
+socks5_host_failed(struct socks_data *sdata)
+{
+	socks5_response(sdata, SOCKS5_RESP_FAILURE, 1);
 }
 
 static void
@@ -158,11 +155,10 @@ socks5_read_fqdn(struct bufferevent *bev, void *ctx)
 		return;
 	}
 
-	bufferevent_read(bev, data->fqdn, data->nfqdn);
-	data->fqdn[data->nfqdn] = '\0';
-        LWIP_DEBUGF(SOCKS_DEBUG, ("%s: fqdn %s\n", __func__, data->fqdn));
-	ret = dns_gethostbyname(data->fqdn, &sdata->ipaddr, socks5_found_host,
-									ctx);
+	bufferevent_read(bev, sdata->fqdn, data->nfqdn);
+	sdata->fqdn[data->nfqdn] = '\0';
+        LWIP_DEBUGF(SOCKS_DEBUG, ("%s: fqdn %s\n", __func__, sdata->fqdn));
+	ret = socks_lookup_host(sdata);
 	if (!ret)
 		socks5_read_port(bev, ctx);
 	else

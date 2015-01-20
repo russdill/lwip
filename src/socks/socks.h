@@ -10,12 +10,17 @@ struct event_base;
 struct socks_data {
 	struct bufferevent *bev;
 	int connected;
+	int search;
+	int tried_bare;
+	int dot;
 	u_char version;
 	ip_addr_t ipaddr;
 	u_int16_t port;
 	struct tcp_pcb *pcb;
+	char fqdn[256];
 };
 
+int socks_lookup_host(struct socks_data *data);
 void socks_free(struct socks_data *data);
 void socks_flush_socks(struct socks_data *data);
 int socks_tcp_connect(struct socks_data *data);

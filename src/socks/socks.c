@@ -3,11 +3,120 @@
 #include <event2/buffer.h>
 #include <event2/listener.h>
 #include <lwip/tcp.h>
+#include <lwip/dns.h>
 #include <lwip/tcp_impl.h>
 
 #include "socks.h"
 #include "socks4.h"
 #include "socks5.h"
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(n)	(sizeof(n) / sizeof((n)[0]))
+#endif
+
+static char *socks_search[SOCKS_SEARCH_SIZE];
+
+void
+socks_clear_search(void)
+{
+	int i;
+	LWIP_DEBUGF(SOCKS_DEBUG, ("%s\n", __func__));
+	for (i = 0; i < ARRAY_SIZE(socks_search); i++)
+		if (socks_search[i]) {
+			free(socks_search[i]);
+			socks_search[i] = NULL;
+		}
+}
+
+void
+socks_add_search(char *search)
+{
+	int i;
+	LWIP_DEBUGF(SOCKS_DEBUG, ("%s: %s\n", __func__, search));
+	for (i = 0; i < ARRAY_SIZE(socks_search); i++)
+		if (!socks_search[i]) {
+			socks_search[i] = search;
+			return;
+		}
+	free(search);
+}
+
+static const char *
+socks_get_next_fqdn(struct socks_data *data)
+{
+	int i;
+
+	if (data->dot && !data->tried_bare) {
+		data->tried_bare = 1;
+		return data->fqdn;
+	}
+
+	for (i = data->search; i < ARRAY_SIZE(socks_search); i++)
+		if (socks_search[i])
+			break;
+
+	if (i < ARRAY_SIZE(socks_search)) {
+		static char fqdn[DNS_MAX_NAME_LENGTH];
+		snprintf(fqdn, DNS_MAX_NAME_LENGTH, "%s.%s", data->fqdn,
+					socks_search[i]);
+		data->search = i + 1;
+		return fqdn;
+	}
+
+	if (!data->dot && !data->tried_bare) {
+		data->tried_bare = 1;
+		return data->fqdn;
+	}
+
+	return NULL;
+}
+
+static void
+socks_found_host(const char *name, ip_addr_t *ipaddr, void *ctx)
+{
+	struct socks_data *data = ctx;
+	const char *fqdn;
+	int ret;
+
+	if (ipaddr && ipaddr->addr) {
+		LWIP_DEBUGF(SOCKS_DEBUG, ("%s\n", __func__));
+		data->ipaddr.addr = ipaddr->addr;
+		if (data->version == 4)
+			socks4_found_host(data);
+		else
+			socks5_found_host(data);
+		return;
+	}
+
+	fqdn = socks_get_next_fqdn(data);
+	if (!fqdn) {
+		if (data->version == 4)
+			socks4_host_failed(data);
+		else
+			socks5_host_failed(data);
+		return;
+	}
+
+	ret = dns_gethostbyname(fqdn, &data->ipaddr, socks_found_host,
+							data);
+	if (!ret) {
+		LWIP_DEBUGF(SOCKS_DEBUG, ("%s\n", __func__));
+		if (data->version == 4)
+			socks4_found_host(data);
+		else
+			socks5_found_host(data);
+	}
+}
+
+int
+socks_lookup_host(struct socks_data *data)
+{
+	const char *fqdn;
+
+	data->dot = !!strchr(data->fqdn, '.');
+	fqdn = socks_get_next_fqdn(data);
+	return dns_gethostbyname(fqdn, &data->ipaddr, socks_found_host, data);
+}
 
 void
 socks_free(struct socks_data *data)
