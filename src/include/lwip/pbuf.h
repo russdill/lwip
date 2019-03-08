@@ -64,8 +64,8 @@ typedef enum {
 typedef enum {
   PBUF_RAM, /* pbuf data is stored in RAM */
   PBUF_ROM, /* pbuf data is stored in ROM */
-  PBUF_REF, /* pbuf comes from the pbuf pool */
-  PBUF_POOL /* pbuf payload refers to RAM */
+  PBUF_REF, /* pbuf payload refers to RAM */
+  PBUF_POOL /* pbuf comes from the pbuf pool */
 } pbuf_type;
 
 
